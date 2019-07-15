@@ -1,4 +1,5 @@
 import React from 'react';
+import { Map } from 'immutable';
 import styled from 'styled-components';
 import { getRoute } from '../../schema/routes/RouteClient';
 import {
@@ -12,6 +13,7 @@ import {
   openTrainPredictionEventStream,
   openBusPredictionEventStream,
 } from '../../schema/predictions/PredictionsClient';
+import PredictionsRow from './PredictionsRow';
 
 const TrasitRowWrapper = styled.div`
   width: 100%;
@@ -54,10 +56,6 @@ const TimeUntilArrival = styled.div`
   :last-child {
     border-right: none;
   }
-
-  * {
-    margin: 0;
-  }
 `;
 
 export default class TransitRow extends React.Component {
@@ -66,14 +64,18 @@ export default class TransitRow extends React.Component {
     destinations: [],
     routeFetchStatus: UNINITIALIZED,
     predictionFetchStatus: UNINITIALIZED,
+    predictionData: Map(),
   };
 
   componentDidMount() {
     const { routeId, stopId, outboundStopId, inboundStopId } = this.props;
+    const { predictionData } = this.state;
+
     this.setState({
       routeFetchStatus: STARTED,
       predictionFetchStatus: STARTED,
     });
+
     getRoute(routeId)
       .then(response => {
         this.setState({
@@ -89,18 +91,34 @@ export default class TransitRow extends React.Component {
         });
       });
     if (stopId) {
-      // openTrainPredictionEventStream(routeId, stopId, data => {});
+      this.closeStream = openTrainPredictionEventStream(
+        routeId,
+        stopId,
+        data => {
+          this.setState(prevState => ({
+            predictionData: prevState.predictionData.merge(data),
+          }));
+        },
+      );
     } else if (outboundStopId && inboundStopId) {
-      // openBusPredictionEventStream(
-      //   routeId,
-      //   { inboundStopId, outboundStopId },
-      //   data => {},
-      // );
+      this.closeStream = openBusPredictionEventStream(
+        routeId,
+        { inboundStopId, outboundStopId },
+        data => {
+          this.setState(prevState => ({
+            predictionData: prevState.predictionData.merge(data),
+          }));
+        },
+      );
     }
   }
 
+  componentWillUnmount() {
+    if (this.closeStream) this.closeStream();
+  }
+
   renderDestinationContent() {
-    const { routeFetchStatus, destinations } = this.state;
+    const { routeFetchStatus, destinations, predictionData } = this.state;
     if (routeFetchStatus === STARTED || routeFetchStatus === UNINITIALIZED) {
       return <LoadingSpinner />;
     }
@@ -109,12 +127,17 @@ export default class TransitRow extends React.Component {
       return <span>failed</span>;
     }
 
-    return destinations.map((destination, directionId) => (
-      <TimeUntilArrival>
-        <p>{destination}</p>
-        <h1>7</h1>
-      </TimeUntilArrival>
-    ));
+    return destinations.map((destination, directionId) => {
+      const predictionsForDestination = predictionData.filter(
+        prediction => prediction.direction === directionId,
+      );
+      return (
+        <TimeUntilArrival key={directionId}>
+          <p>{destination}</p>
+          <PredictionsRow predictionData={predictionsForDestination} />
+        </TimeUntilArrival>
+      );
+    });
   }
 
   render() {
