@@ -2,12 +2,19 @@
   "name": "mbta-times",
   "version": "0.1.0",
   "private": true,
+  "devDependencies": {
+    "prettier": "^1.18.2"
+  },
   "dependencies": {
+    "dotenv": "^8.0.0",
+    "express": "^4.17.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1"
+    "react-scripts": "3.0.1",
+    "styled-components": "^4.3.2"
   },
   "scripts": {
+    "start-proxy": "node ./service/proxy",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
