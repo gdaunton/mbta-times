@@ -29,9 +29,9 @@ function App() {
   return (
     <AppContent>
       <TransitList>
-        <TransitRow routeId="69" />
-        <TransitRow routeId="91" />
-        <TransitRow routeId="Red" />
+        <TransitRow routeId={69} inboundStopId={1404} outboundStopId={1425} />
+        <TransitRow routeId={91} inboundStopId={12767} outboundStopId={2768} />
+        <TransitRow routeId="Red" stopId="place-cntsq" />
       </TransitList>
     </AppContent>
   );

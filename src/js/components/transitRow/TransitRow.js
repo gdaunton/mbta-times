@@ -8,6 +8,10 @@ import {
   FAILED,
 } from '../../schema/lib/fetchStatus';
 import LoadingSpinner from '../LoadingSpinner';
+import {
+  openTrainPredictionEventStream,
+  openBusPredictionEventStream,
+} from '../../schema/predictions/PredictionsClient';
 
 const TrasitRowWrapper = styled.div`
   width: 100%;
@@ -65,7 +69,7 @@ export default class TransitRow extends React.Component {
   };
 
   componentDidMount() {
-    const { routeId } = this.props;
+    const { routeId, stopId, outboundStopId, inboundStopId } = this.props;
     this.setState({
       routeFetchStatus: STARTED,
       predictionFetchStatus: STARTED,
@@ -84,6 +88,15 @@ export default class TransitRow extends React.Component {
           routeFetchStatus: FAILED,
         });
       });
+    if (stopId) {
+      // openTrainPredictionEventStream(routeId, stopId, data => {});
+    } else if (outboundStopId && inboundStopId) {
+      // openBusPredictionEventStream(
+      //   routeId,
+      //   { inboundStopId, outboundStopId },
+      //   data => {},
+      // );
+    }
   }
 
   renderDestinationContent() {
