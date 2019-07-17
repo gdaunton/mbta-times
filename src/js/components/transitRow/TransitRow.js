@@ -69,7 +69,6 @@ export default class TransitRow extends React.Component {
 
   componentDidMount() {
     const { routeId, stopId, outboundStopId, inboundStopId } = this.props;
-    const { predictionData } = this.state;
 
     this.setState({
       routeFetchStatus: STARTED,
@@ -99,6 +98,9 @@ export default class TransitRow extends React.Component {
             predictionData: prevState.predictionData.merge(data),
           }));
         },
+        predictionId => {
+          this.removePrediction(predictionId);
+        },
       );
     } else if (outboundStopId && inboundStopId) {
       this.closeStream = openBusPredictionEventStream(
@@ -109,6 +111,9 @@ export default class TransitRow extends React.Component {
             predictionData: prevState.predictionData.merge(data),
           }));
         },
+        predictionId => {
+          this.removePrediction(predictionId);
+        },
       );
     }
   }
@@ -116,6 +121,17 @@ export default class TransitRow extends React.Component {
   componentWillUnmount() {
     if (this.closeStream) this.closeStream();
   }
+
+  removePrediction = id => {
+    this.setState(prevState => {
+      const predictionKey = prevState.predictionData.findKey(
+        prediction => prediction.predictionId === id,
+      );
+      return {
+        predictionData: prevState.predictionData.remove(predictionKey),
+      };
+    });
+  };
 
   renderDestinationContent() {
     const { routeFetchStatus, destinations, predictionData } = this.state;
@@ -134,7 +150,10 @@ export default class TransitRow extends React.Component {
       return (
         <TimeUntilArrival key={directionId}>
           <p>{destination}</p>
-          <PredictionsRow predictionData={predictionsForDestination} />
+          <PredictionsRow
+            predictionData={predictionsForDestination}
+            removePrediction={this.removePrediction}
+          />
         </TimeUntilArrival>
       );
     });

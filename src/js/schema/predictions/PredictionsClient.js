@@ -2,6 +2,7 @@ import { Map } from 'immutable';
 const BASE_URL = 'http://localhost:8000';
 
 const parseDataItem = data => {
+  const predictionId = data.id;
   const tripId = data.relationships.trip.data.id;
   const routeId = data.relationships.route.data.id;
   const direction = data.attributes.direction_id;
@@ -9,6 +10,8 @@ const parseDataItem = data => {
   const departureTime = new Date(data.attributes.departure_time);
   return Map().set(tripId, {
     id: tripId,
+    predictionId,
+    tripId,
     routeId,
     direction,
     arrivalTime,
@@ -27,7 +30,12 @@ const parsePredictionsIntoList = data => {
   }, Map());
 };
 
-export const openTrainPredictionEventStream = (routeId, stopId, callback) => {
+export const openTrainPredictionEventStream = (
+  routeId,
+  stopId,
+  callback,
+  removeFunction,
+) => {
   let errorCount = 0;
   const source = new EventSource(
     `${BASE_URL}/predictions?filter[route]=${routeId}&filter[stop]=${stopId}`,
@@ -40,6 +48,9 @@ export const openTrainPredictionEventStream = (routeId, stopId, callback) => {
   });
   source.addEventListener('reset', event => {
     callback(parsePredictionsIntoList(JSON.parse(event.data)));
+  });
+  source.addEventListener('remove', event => {
+    removeFunction(JSON.parse(event.data).id);
   });
   source.onerror = () => {
     if (errorCount > 2) {
@@ -54,6 +65,7 @@ export const openBusPredictionEventStream = (
   routeId,
   { inboundStopId, outboundStopId },
   callback,
+  removeFunction,
 ) => {
   let errorCount = 0;
   const source = new EventSource(
@@ -67,6 +79,9 @@ export const openBusPredictionEventStream = (
   });
   source.addEventListener('reset', event => {
     callback(parsePredictionsIntoList(JSON.parse(event.data)));
+  });
+  source.addEventListener('remove', event => {
+    removeFunction(JSON.parse(event.data).id);
   });
   source.onerror = () => {
     if (errorCount > 2) {

@@ -42,16 +42,18 @@ export default class PredictionsRow extends React.Component {
   };
 
   getMinDiff(prediction) {
+    const { removePrediction } = this.props;
     const { currentTime } = this.state;
-    const diffTime = Math.abs(
-      prediction.departureTime.getTime() - currentTime.getTime(),
-    );
-    return Math.ceil(diffTime / (1000 * 60));
+    const diffTime = prediction.departureTime.getTime() - currentTime.getTime();
+    const diffMin = Math.ceil(diffTime / (1000 * 60));
+
+    if (diffMin < 0) removePrediction(prediction.predictionId);
+
+    return diffMin;
   }
 
   render() {
     const { predictionData } = this.props;
-    const { currentTime } = this.state;
     return (
       <PredictionRowWrapper>
         {predictionData
