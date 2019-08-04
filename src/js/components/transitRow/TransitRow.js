@@ -25,6 +25,7 @@ const TrasitRowWrapper = styled.div`
 `;
 
 const LineName = styled.h1`
+  position: relative;
   flex-shrink: 0;
   width: 100px;
   height: 100px;
@@ -32,7 +33,7 @@ const LineName = styled.h1`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #fff;
+  background-color: ${({ color }) => color || '#fff'};
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
 `;
@@ -65,10 +66,12 @@ export default class TransitRow extends React.Component {
     routeFetchStatus: UNINITIALIZED,
     predictionFetchStatus: UNINITIALIZED,
     predictionData: Map(),
+    type: null,
+    color: null,
   };
 
   componentDidMount() {
-    const { routeId, stopId, outboundStopId, inboundStopId } = this.props;
+    const { routeId } = this.props;
 
     this.setState({
       routeFetchStatus: STARTED,
@@ -81,6 +84,8 @@ export default class TransitRow extends React.Component {
           routeFetchStatus: SUCCEEDED,
           destinations: response.destinations,
           name: response.name,
+          color: response.color,
+          type: response.type,
         });
       })
       .catch(e => {
@@ -89,15 +94,22 @@ export default class TransitRow extends React.Component {
           routeFetchStatus: FAILED,
         });
       });
+    this.openPredictionStream();
+  }
+
+  componentWillUnmount() {
+    if (this.closeStream) this.closeStream();
+    if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+  }
+
+  openPredictionStream = () => {
+    const { routeId, stopId, outboundStopId, inboundStopId } = this.props;
+
     if (stopId) {
       this.closeStream = openTrainPredictionEventStream(
         routeId,
         stopId,
-        data => {
-          this.setState(prevState => ({
-            predictionData: prevState.predictionData.merge(data),
-          }));
-        },
+        this.updatePredictionData,
         predictionId => {
           this.removePrediction(predictionId);
         },
@@ -106,23 +118,28 @@ export default class TransitRow extends React.Component {
       this.closeStream = openBusPredictionEventStream(
         routeId,
         { inboundStopId, outboundStopId },
-        data => {
-          this.setState(prevState => ({
-            predictionData: prevState.predictionData.merge(data),
-          }));
-        },
+        this.updatePredictionData,
         predictionId => {
           this.removePrediction(predictionId);
         },
       );
     }
+  };
+
+  resetReconnectionTimeout() {
+    if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+    this.reconnectTimeout = setTimeout(this.openPredictionStream, 180000);
   }
 
-  componentWillUnmount() {
-    if (this.closeStream) this.closeStream();
-  }
+  updatePredictionData = data => {
+    this.resetReconnectionTimeout();
+    this.setState(prevState => ({
+      predictionData: prevState.predictionData.merge(data),
+    }));
+  };
 
   removePrediction = id => {
+    this.resetReconnectionTimeout();
     this.setState(prevState => {
       const predictionKey = prevState.predictionData.findKey(
         prediction => prediction.predictionId === id,
@@ -161,11 +178,11 @@ export default class TransitRow extends React.Component {
 
   render() {
     const { routeId } = this.props;
-    const { name } = this.state;
+    const { name, color } = this.state;
 
     return (
       <TrasitRowWrapper>
-        <LineName>{name || routeId}</LineName>
+        <LineName color={color}>{name || routeId}</LineName>
         <ExtraInfoWrapper>{this.renderDestinationContent()}</ExtraInfoWrapper>
       </TrasitRowWrapper>
     );
