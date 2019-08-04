@@ -1,5 +1,20 @@
 import React from 'react';
 import styled from 'styled-components';
+
+const TimeUntilArrival = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-right: 1px solid #ccc;
+  padding-left: 32px;
+  padding-right: 32px;
+  :last-child {
+    border-right: none;
+  }
+`;
+
 const PredictionRowWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -17,7 +32,7 @@ const PredictionRowWrapper = styled.div`
   }
 `;
 
-export default class PredictionsRow extends React.Component {
+export default class DestinationRow extends React.Component {
   state = {
     currentTime: new Date(),
   };
@@ -52,7 +67,7 @@ export default class PredictionsRow extends React.Component {
     return diffMin;
   }
 
-  render() {
+  renderPredictions() {
     const { predictionData } = this.props;
     return (
       <PredictionRowWrapper>
@@ -73,6 +88,16 @@ export default class PredictionsRow extends React.Component {
           })
           .toJS()}
       </PredictionRowWrapper>
+    );
+  }
+
+  render() {
+    const { destination } = this.props;
+    return (
+      <TimeUntilArrival>
+        <p>{destination}</p>
+        {this.renderPredictions()}
+      </TimeUntilArrival>
     );
   }
 }

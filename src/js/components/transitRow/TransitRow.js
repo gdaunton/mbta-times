@@ -13,7 +13,7 @@ import {
   openTrainPredictionEventStream,
   openBusPredictionEventStream,
 } from '../../schema/predictions/PredictionsClient';
-import PredictionsRow from './PredictionsRow';
+import DestinationRow from './DestinationRow';
 
 const TrasitRowWrapper = styled.div`
   width: 100%;
@@ -43,20 +43,6 @@ const ExtraInfoWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-`;
-
-const TimeUntilArrival = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-right: 1px solid #ccc;
-  padding-left: 32px;
-  padding-right: 32px;
-  :last-child {
-    border-right: none;
-  }
 `;
 
 export default class TransitRow extends React.Component {
@@ -165,13 +151,12 @@ export default class TransitRow extends React.Component {
         prediction => prediction.direction === directionId,
       );
       return (
-        <TimeUntilArrival key={directionId}>
-          <p>{destination}</p>
-          <PredictionsRow
-            predictionData={predictionsForDestination}
-            removePrediction={this.removePrediction}
-          />
-        </TimeUntilArrival>
+        <DestinationRow
+          key={directionId}
+          destination={destination}
+          removePrediction={this.removePrediction}
+          predictionData={predictionsForDestination}
+        />
       );
     });
   }
