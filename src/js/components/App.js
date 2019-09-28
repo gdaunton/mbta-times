@@ -1,6 +1,12 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import TransitRow from './transitRow/TransitRow';
+
+const GlobalStyle = createGlobalStyle`
+  * {
+    box-sizing: border-box;
+  }
+`;
 
 const AppContent = styled.div`
   width: 75%;
@@ -8,26 +14,27 @@ const AppContent = styled.div`
   min-width: 550px;
   margin: 0 auto;
   padding-top: 200px;
+  position: relative;
 `;
 
 const TransitList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+
   > * {
     margin-top: 12px;
     margin-bottom: 12px;
   }
 
-  > :first-child {
-    margin-top: 0;
-  }
-
-  > :last-child {
-    margin-bottom: 0;
+  > :nth-child(odd) {
+    margin-right: 12px;
   }
 `;
 
 function App() {
   return (
     <AppContent>
+      <GlobalStyle />
       <TransitList>
         <TransitRow routeId={69} inboundStopId={1404} outboundStopId={1425} />
         <TransitRow routeId={91} inboundStopId={12767} outboundStopId={2768} />

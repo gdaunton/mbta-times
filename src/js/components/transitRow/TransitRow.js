@@ -14,14 +14,14 @@ import {
   openBusPredictionEventStream,
 } from '../../schema/predictions/PredictionsClient';
 import DestinationRow from './DestinationRow';
+import { getStopName } from '../../schema/stops/StopsClient';
 
 const TrasitRowWrapper = styled.div`
-  width: 100%;
+  width: calc(50% - 6px);
   background-color: #f2f3f5;
   border: 1px solid #e9eaed;
-  height: 100px;
   border-radius: 8px;
-  display: inline-flex;
+  padding: 24px;
 `;
 
 const LineName = styled.h1`
@@ -34,15 +34,17 @@ const LineName = styled.h1`
   align-items: center;
   justify-content: center;
   background-color: ${({ color }) => color || '#fff'};
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-radius: 8px;
 `;
 
-const ExtraInfoWrapper = styled.div`
-  flex-grow: 1;
+const HeaderWrapper = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const StopName = styled.div`
+  text-align: right;
 `;
 
 export default class TransitRow extends React.Component {
@@ -54,15 +56,37 @@ export default class TransitRow extends React.Component {
     predictionData: Map(),
     type: null,
     color: null,
+    stopName: null,
+    inboundStopName: null,
+    outboundStopName: null,
   };
 
   componentDidMount() {
-    const { routeId } = this.props;
+    const { routeId, stopId, outboundStopId, inboundStopId } = this.props;
 
     this.setState({
       routeFetchStatus: STARTED,
       predictionFetchStatus: STARTED,
     });
+
+    if (stopId) {
+      getStopName(stopId).then(response => {
+        this.setState({
+          stopName: response.name,
+        });
+      });
+    } else {
+      getStopName(outboundStopId).then(response => {
+        this.setState({
+          outboundStopName: response.name,
+        });
+      });
+      getStopName(inboundStopId).then(response => {
+        this.setState({
+          inboundStopName: response.name,
+        });
+      });
+    }
 
     getRoute(routeId)
       .then(response => {
@@ -161,14 +185,35 @@ export default class TransitRow extends React.Component {
     });
   }
 
+  renderStopName() {
+    const { stopName, inboundStopName, outboundStopName } = this.state;
+    if (stopName) {
+      return <StopName>{stopName}</StopName>;
+    }
+
+    if (inboundStopName && outboundStopName) {
+      return (
+        <StopName>
+          <p>{inboundStopName}</p>
+          <p>{outboundStopName}</p>
+        </StopName>
+      );
+    }
+
+    return;
+  }
+
   render() {
     const { routeId } = this.props;
     const { name, color } = this.state;
 
     return (
       <TrasitRowWrapper>
-        <LineName color={color}>{name || routeId}</LineName>
-        <ExtraInfoWrapper>{this.renderDestinationContent()}</ExtraInfoWrapper>
+        <HeaderWrapper>
+          <LineName color={color}>{name || routeId}</LineName>
+          {this.renderStopName()}
+        </HeaderWrapper>
+        <div>{this.renderDestinationContent()}</div>
       </TrasitRowWrapper>
     );
   }

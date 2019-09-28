@@ -7,11 +7,9 @@ const TimeUntilArrival = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-right: 1px solid #ccc;
-  padding-left: 32px;
-  padding-right: 32px;
+  border-bottom: 1px solid #ccc;
   :last-child {
-    border-right: none;
+    border-bottom: none;
   }
 `;
 
@@ -95,7 +93,7 @@ export default class DestinationRow extends React.Component {
     const { destination } = this.props;
     return (
       <TimeUntilArrival>
-        <p>{destination}</p>
+        <h3>{destination}</h3>
         {this.renderPredictions()}
       </TimeUntilArrival>
     );
