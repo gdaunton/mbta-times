@@ -12,7 +12,7 @@
     "dotenv": "^8.0.0",
     "eventsource": "^1.0.7",
     "express": "^4.17.1",
-    "http-proxy": "^1.17.0",
+    "http-proxy": "^1.18.1",
     "immutable": "^4.0.0-rc.12",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
