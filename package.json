@@ -11,7 +11,7 @@
     "@fortawesome/react-fontawesome": "^0.1.4",
     "dotenv": "^8.0.0",
     "eventsource": "^1.0.7",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "http-proxy": "^1.17.0",
     "immutable": "^4.0.0-rc.12",
     "react": "^16.8.6",
